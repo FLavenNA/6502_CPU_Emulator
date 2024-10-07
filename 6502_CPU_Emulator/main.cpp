@@ -44,6 +44,13 @@ struct Mem
 		return Data[address];
 	}
 
+	void writeWord(Word value, uint32_t address, uint32_t& cycles)
+	{
+		Data[address]		= value & 0xFF;
+		Data[address + 1]	= (value >> 8);
+		cycles -= 2;
+	}
+
 };
 
 struct CPU
@@ -93,6 +100,26 @@ struct CPU
 		return data;
 	}
 
+	Word fetchWord(uint32_t& cycles, Mem& memory)
+	{
+		// 6502 is little endian
+		Word data = memory[PC];
+		PC++;
+
+		data |= (memory[PC] << 8);
+		PC++;
+
+		cycles += 2;
+
+		// if you want to handle endianness
+		// you would have to swap bytes
+		// if (PLATFORM_BIG_ENDIAN)
+		// SwapBytesInWord(data)
+
+		return data;
+	}
+
+
 	Byte readByte(uint32_t& cycles, Byte address, Mem& memory)
 	{
 		Byte data = memory[address];
@@ -101,8 +128,10 @@ struct CPU
 	}
 
 	// opcodes
-	static constexpr Byte INS_LDA_IM = 0xA9;
-	static constexpr Byte INS_LDA_ZP = 0xA5;
+	static constexpr Byte INS_LDA_IM	= 0xA9;
+	static constexpr Byte INS_LDA_ZP	= 0xA5;
+	static constexpr Byte INS_LDA_ZPX	= 0xB5;
+	static constexpr Byte INS_JSR		= 0x20;
 
 	void ldaSetStatus()
 	{
@@ -132,6 +161,23 @@ struct CPU
 				ldaSetStatus();
 			}
 			break;
+			case INS_LDA_ZPX:
+			{
+				// Todo will be handling overflow case later
+				Byte zeroPageAddress = fetchByte(cycles, memory);
+				zeroPageAddress += X;
+				cycles--;
+				A = readByte(cycles, zeroPageAddress, memory);
+				ldaSetStatus();
+			}
+			break;
+			case INS_JSR:
+			{
+				Word subAddr = fetchWord(cycles, memory);
+				memory.writeWord(PC - 1, SP, cycles);
+				PC = subAddr;
+				cycles--;
+			}
 			default:
 				printf("Instruction not handled %d \n", instruction);
 				break;
@@ -146,11 +192,12 @@ int main()
 	CPU cpu;
 	cpu.reset(mem);
 	// start - inline a little program 
-	mem[0xFFFC] = CPU::INS_LDA_ZP;
+	mem[0xFFFC] = CPU::INS_JSR;
 	mem[0xFFFD] = 0x42;
-	mem[0x0042] = 0x84;
+	mem[0xFFFE] = 0x42;
+	mem[0x4242] = CPU::INS_LDA_IM;
+	mem[0x4243] = 0x84;
 	// start - inline a little program 
-
-	cpu.execute(3, mem);
+	cpu.execute(9, mem);
 	return 0;
 }

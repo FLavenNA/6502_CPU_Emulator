@@ -1,4 +1,4 @@
 ﻿  main.cpp
-C:\Users\FLavenN\source\repos\6502_CPU_Emulator\6502_CPU_Emulator\main.cpp(71,1): warning C4305: '=': truncation from 'int' to 'Byte'
-C:\Users\FLavenN\source\repos\6502_CPU_Emulator\6502_CPU_Emulator\main.cpp(71,8): warning C4309: '=': truncation of constant value
-  6502_CPU_Emulator.vcxproj -> C:\Users\FLavenN\source\repos\6502_CPU_Emulator\Debug\6502_CPU_Emulator.exe
+C:\Users\FLavenN\Desktop\Projects\6502_CPU_Emulator\6502_CPU_Emulator\main.cpp(78,1): warning C4305: '=': truncation from 'int' to 'Byte'
+C:\Users\FLavenN\Desktop\Projects\6502_CPU_Emulator\6502_CPU_Emulator\main.cpp(78,8): warning C4309: '=': truncation of constant value
+  6502_CPU_Emulator.vcxproj -> C:\Users\FLavenN\Desktop\Projects\6502_CPU_Emulator\Debug\6502_CPU_Emulator.exe
