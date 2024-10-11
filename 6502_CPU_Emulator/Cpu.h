@@ -54,7 +54,7 @@ struct Mem
 
 };
 
-struct CPU
+struct Cpu
 {
 	Word PC;		// Program Counter
 	Byte SP;		// Stack Pointer
