@@ -45,7 +45,7 @@ struct Mem
 		return Data[address];
 	}
 
-	void writeWord(Word value, uint32_t address, uint32_t& cycles)
+	void writeWord(Word value, uint32_t address, int32_t& cycles)
 	{
 		Data[address] = value & 0xFF;
 		Data[address + 1] = (value >> 8);
@@ -93,7 +93,7 @@ struct Cpu
 		memory.init();
 	}
 
-	Byte fetchByte(uint32_t& cycles, Mem& memory)
+	Byte fetchByte(int32_t& cycles, Mem& memory)
 	{
 		Byte data = memory[PC];
 		PC++;
@@ -101,7 +101,7 @@ struct Cpu
 		return data;
 	}
 
-	Word fetchWord(uint32_t& cycles, Mem& memory)
+	Word fetchWord(int32_t& cycles, Mem& memory)
 	{
 		// 6502 is little endian
 		Word data = memory[PC];
@@ -121,7 +121,7 @@ struct Cpu
 	}
 
 
-	Byte readByte(uint32_t& cycles, Byte address, Mem& memory)
+	Byte readByte(int32_t& cycles, Byte address, Mem& memory)
 	{
 		Byte data = memory[address];
 		cycles--;
@@ -132,6 +132,7 @@ struct Cpu
 	static constexpr Byte INS_LDA_IM = 0xA9;
 	static constexpr Byte INS_LDA_ZP = 0xA5;
 	static constexpr Byte INS_LDA_ZPX = 0xB5;
+	static constexpr Byte INS_LDA_ABS = 0xAD;
 	static constexpr Byte INS_JSR = 0x20;
 
 	void ldaSetStatus()
@@ -140,8 +141,10 @@ struct Cpu
 		N = (A & 0b10000000) > 0;
 	}
 
-	void execute(uint32_t cycles, Mem& memory)
+	/** @return The number of cycles that were used */
+	int32_t execute(int32_t cycles, Mem& memory)
 	{
+		const int32_t cyclesRequested = cycles;
 		while (cycles > 0)
 		{
 			Byte instruction = fetchByte(cycles, memory);
@@ -176,6 +179,7 @@ struct Cpu
 			{
 				Word subAddr = fetchWord(cycles, memory);
 				memory.writeWord(PC - 1, SP, cycles);
+				SP += 2;
 				PC = subAddr;
 				cycles--;
 			}
@@ -184,5 +188,7 @@ struct Cpu
 				break;
 			}
 		}
+
+		return cyclesRequested - cycles;
 	}
 };
