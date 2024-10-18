@@ -133,6 +133,10 @@ struct Cpu
 	static constexpr Byte INS_LDA_ZP = 0xA5;
 	static constexpr Byte INS_LDA_ZPX = 0xB5;
 	static constexpr Byte INS_LDA_ABS = 0xAD;
+	static constexpr Byte INS_LDA_ABSX = 0xBD;
+	static constexpr Byte INS_LDA_ABSY = 0xB9;
+	static constexpr Byte INS_LDA_INDX = 0xA1;
+	static constexpr Byte INS_LDA_INDY = 0xB1;
 	static constexpr Byte INS_JSR = 0x20;
 
 	void ldaSetStatus()
