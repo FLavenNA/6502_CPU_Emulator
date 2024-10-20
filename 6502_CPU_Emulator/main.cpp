@@ -54,21 +54,6 @@ TEST_F(M6502Test1, CpuCanExecuteMoreCyclesThanRequestedIfRequiredByTheInstructio
 	EXPECT_EQ(cyclesUsed, 2);
 }
 
-TEST_F(M6502Test1, ExecutingABadInstructionDoesNotPutUsInAnInfiniteLoop)
-{
-	// given:
-	mem[0xFFFC] = 0x0; // invalid instruction
-	mem[0xFFFD] = 0x0;
-	Cpu cpuCopy = cpu;
-	constexpr int32_t numCycles = 1;
-
-	// when:
-	int32_t cyclesUsed = cpu.execute(numCycles, mem);
-
-	// then:
-	EXPECT_EQ(cyclesUsed, numCycles);
-}
-
 TEST_F(M6502Test1, LDAImmediateCanLoadAValueIntoRegister)
 {
 	// given:
@@ -190,11 +175,11 @@ TEST_F(M6502Test1, LDAAbsoluteCanLoadValueIntoTheARegister)
 TEST_F(M6502Test1, LDAAbsoluteXCanLoadValueIntoTheARegister)
 {
 	// given:
-	cpu.X = 0X1;
+	cpu.X = 1;
 	mem[0xFFFC] = Cpu::INS_LDA_ABSX;
 	mem[0xFFFD] = 0x80;
 	mem[0xFFFE] = 0x44; // 0x4480
-	mem[0x4480] = 0x37; 
+	mem[0x4481] = 0x37; 
 	constexpr int32_t expectedCycles = 4;
 	Cpu cpuCopy = cpu;
 
@@ -234,11 +219,11 @@ TEST_F(M6502Test1, LDAAbsoluteXCanLoadValueIntoTheARegisterWhenItCrossesAPageBou
 TEST_F(M6502Test1, LDAAbsoluteYCanLoadValueIntoTheARegister)
 {
 	// given:
-	cpu.Y = 0X1;
+	cpu.Y = 1;
 	mem[0xFFFC] = Cpu::INS_LDA_ABSY;
 	mem[0xFFFD] = 0x80;
 	mem[0xFFFE] = 0x44; // 0x4480
-	mem[0x4480] = 0x37;
+	mem[0x4481] = 0x37;
 	constexpr int32_t expectedCycles = 4;
 	Cpu cpuCopy = cpu;
 

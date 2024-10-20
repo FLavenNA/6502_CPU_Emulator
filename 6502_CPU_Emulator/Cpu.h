@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <cstdint>
 
+#include <iostream>
+
 // http://www.6502.org/users/obelisk/6502/index.html
 
 // The processor is little endian
@@ -121,11 +123,21 @@ struct Cpu
 	}
 
 
-	Byte readByte(int32_t& cycles, Byte address, Mem& memory)
+	Byte readByte(int32_t& cycles, Word address, Mem& memory)
 	{
 		Byte data = memory[address];
 		cycles--;
 		return data;
+	}
+
+	Word readWord(int32_t& cycles, Word address, Mem& memory)
+	{
+		Byte lowByte = readByte(cycles, address, memory);
+		Byte highByte = readByte(cycles, address + 1, memory);
+
+		Word effectiveAddress = lowByte | (highByte << 8);
+
+		return effectiveAddress;
 	}
 
 	// opcodes
@@ -179,6 +191,49 @@ struct Cpu
 				ldaSetStatus();
 			}
 			break;
+			case INS_LDA_ABS:
+			{
+				Word absAddress = fetchWord(cycles, memory);
+				A = readByte(cycles, absAddress, memory);
+			}
+			break;
+			case INS_LDA_ABSX:
+			{
+				Word absAddress = fetchWord(cycles, memory);
+				Word absAddressX = absAddress + X;
+				A = readByte(cycles, absAddressX, memory);
+				if (absAddressX - absAddress >= 0xFF)
+					cycles--;
+			}
+			break;
+			case INS_LDA_ABSY:
+			{
+				Word absAddress = fetchWord(cycles, memory);
+				Word absAddressY = absAddress + Y;
+				A = readByte(cycles, absAddressY, memory);
+				if (absAddressY - absAddress >= 0xFF)
+					cycles--;
+			}
+			break;
+			case INS_LDA_INDX:
+			{
+				Byte zpAddress = fetchByte(cycles, memory);
+				zpAddress += X;
+				cycles--;
+				Word effectiveAddress = readWord(cycles, zpAddress, memory);
+				A = readByte(cycles, effectiveAddress, memory);
+			}
+			break;
+			case INS_LDA_INDY:
+			{
+				Byte zpAddress = fetchByte(cycles, memory);
+				Word effectiveAddress = readWord(cycles, zpAddress, memory);
+				Word effectiveAddressY = effectiveAddress + Y;
+				A = readByte(cycles, effectiveAddressY, memory);
+				if (effectiveAddressY - effectiveAddress >= 0xFF)
+					cycles--;
+			}
+			break;
 			case INS_JSR:
 			{
 				Word subAddr = fetchWord(cycles, memory);
@@ -187,9 +242,13 @@ struct Cpu
 				PC = subAddr;
 				cycles--;
 			}
+			break;
 			default:
+			{
 				printf("Instruction not handled %d \n", instruction);
-				break;
+				// throw - 1; Todo maybe later 
+			}
+			break;
 			}
 		}
 
